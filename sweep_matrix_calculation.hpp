@@ -27,7 +27,7 @@ void prediction_step_rha(
         d[elm_idx] = f_curr[elm_idx] + dt * F0_curr[elm_idx];
 
     d[1] += f_curr[0] * dt * rdI * (rdI * Dc[0] + static_cast<T>(0.5) * V[0]);
-    d[size - 2] += f_curr[size - 1] * dt * rdI * (rdI * Dc[size - 2] + static_cast<T>(0.5) * V[size - 1]);
+    d[size - 2] += f_curr[size - 1] * dt * rdI * (rdI * Dc[size - 2] - static_cast<T>(0.5) * V[size - 1]);
 }
 
 template <typename T>
@@ -42,5 +42,5 @@ void correction_step_rha(
             static_cast<T>(0.5) * dt * (F1_curr[elm_idx] - F1_pred[elm_idx]);
 
     d[1] += f_curr[0] * dt * rdI * (rdI * Dc[0] + static_cast<T>(0.5) * V[0]);
-    d[size - 2] += f_curr[size - 1] * dt * rdI * (rdI * Dc[size - 2] + static_cast<T>(0.5) * V[size - 1]);
+    d[size - 2] += f_curr[size - 1] * dt * rdI * (rdI * Dc[size - 2] - static_cast<T>(0.5) * V[size - 1]);
 }
