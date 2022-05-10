@@ -58,10 +58,12 @@ void f_initial(T *f, std::size_t size, std::size_t l) {
 
 template <typename T>
 void Dc_initial(T *Dc, std::size_t size, T eps, GetI<T> const &I) {
-    for (std::size_t elm_idx = 0; elm_idx != size; ++elm_idx)
-        Dc[elm_idx] = eps * eps * std::pow(static_cast<T>(1) - I(elm_idx) * I(elm_idx), static_cast<T>(2));
+    for (std::size_t elm_idx = 1; elm_idx != size - 2; ++elm_idx) {
+        auto hI = static_cast<T>(0.5) * (I(elm_idx) + I(elm_idx + 1));
+        Dc[elm_idx] = eps * eps * std::pow(static_cast<T>(1) - hI * hI, static_cast<T>(2));
+    }
     Dc[0] = static_cast<T>(0);
-    Dc[size - 1] = static_cast<T>(0);
+    Dc[size - 2] = static_cast<T>(0);
 }
 
 template <typename T>
@@ -99,7 +101,7 @@ int main() {
     V_initial(V.data(), size, eps, kappa, I);
     dV_dI_initial(dV_dI.data(), size, eps, kappa, I);
 
-    for (unsigned iter_cnt = 0; iter_cnt != 30000; ++iter_cnt) {
+    for (unsigned iter_cnt = 0; iter_cnt != 300; ++iter_cnt) {
         step(
             f_curr.data(), f_pred.data(),
             a.data(), b.data(), c.data(), d.data(),
