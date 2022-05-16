@@ -8,6 +8,7 @@
 #include <thomas_sweep.hpp>
 #include <rha_calculation.hpp>
 #include <sweep_matrix_calculation.hpp>
+#include <averaging.hpp>
 
 float fPI2 = 6.28318530718f;
 
@@ -21,9 +22,9 @@ void f_initial(T *f, std::size_t size, std::size_t l) {
 template <typename T>
 void Dc_initial(T *Dc, std::size_t size) {
     for (std::size_t elm_idx = 0; elm_idx != size; ++elm_idx)
-        Dc[elm_idx] = static_cast<T>(0);
+        Dc[elm_idx] = static_cast<T>(1);
     Dc[0] = static_cast<T>(0);
-    Dc[size - 1] = static_cast<T>(0);
+    Dc[size - 2] = static_cast<T>(0);
 }
 
 template <typename T>
@@ -61,8 +62,25 @@ int main() {
     V_initial(V.data(), size, dI, kappa);
     dV_dI_initial(dV_dI.data(), size, dI, kappa);
 
+    std::size_t iter_size = 200;
+    std::vector<std::pair<double,double>> avg_vs_time;
+
+    auto f_avg = average_kahan<double>(1, size - 1, [&f_curr](std::size_t idx) {return f_curr[idx];});
+
     // step
-    for (unsigned iter_cnt = 0; iter_cnt != 300'000; ++iter_cnt) {
+    for (unsigned iter_cnt = 0; iter_cnt != iter_size; ++iter_cnt) {
+        /*avg_vs_time.emplace_back(
+            dt * iter_cnt,
+            std::sqrt(
+                average_kahan<double>(1, size - 1, [&f_curr, f_avg](std::size_t idx) {return (f_curr[idx] - f_avg) * (f_curr[idx] - f_avg);})
+            )
+        );*/
+
+        avg_vs_time.emplace_back(
+            dt * iter_cnt,
+            average_kahan<double>(1, size - 1, [&f_curr, f_avg] (std::size_t idx) {return f_curr[idx];})
+        );
+
         lha_sweep_matrix(a.data(), b.data(), c.data(), Dc.data(), V.data(), size, rdI, dt);
         F0_calculation(F0_curr.data(), f_curr.data(), dV_dI.data(), size);
         F1_calculation(F1_curr.data(), f_curr.data(), Dc.data(), V.data(), size, rdI);
@@ -71,8 +89,6 @@ int main() {
 
         f_pred[0] = f_pred[1];
         f_pred[size - 1] = f_pred[size - 2];
-        //f_pred[0] = f_curr[0];
-        //f_pred[size - 1] = f_curr[size - 1];
 
         lha_sweep_matrix(a.data(), b.data(), c.data(), Dc.data(), V.data(), size, rdI, dt);
         F0_calculation(F0_pred.data(), f_pred.data(), dV_dI.data(), size);
@@ -82,12 +98,11 @@ int main() {
         
         f_curr[0] = f_curr[1];
         f_curr[size - 1] = f_curr[size - 2];
-
-        //f_pred.swap(f_curr);
     }
 
     {
-        std::ofstream fout("./data-two-step.txt");
+        std::ofstream fout("./data-two-step.dat");
+        fout << std::setprecision(8) << std::scientific;
         for (std::size_t elm_idx = 0; elm_idx != size; ++elm_idx) {
             auto I = elm_idx >= size / 2 ? 
             (elm_idx - size / 2) * dI + dI / 2 : 
@@ -95,6 +110,14 @@ int main() {
             fout << I << " " << f_curr[elm_idx] << '\n';
         }
         fout << std::endl;
+    }
+
+    {
+        std::ofstream fout("./avg-vs-time.dat");
+        fout << std::setprecision(8) << std::scientific;
+        for (auto a : avg_vs_time) 
+            fout << a.first << " " << a.second << '\n';
+        fout << std::endl; 
     }
 
     return 0;
