@@ -1,0 +1,9 @@
+#data
+*.dat
+
+#vscode
+.vscode
+
+#macos
+.DS_Store
+
