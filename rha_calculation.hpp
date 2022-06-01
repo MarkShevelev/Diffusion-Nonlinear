@@ -8,7 +8,7 @@ void F0_calculation(T *F0, T const *f, T const *dV_dI, std::size_t size) {
         F0[elm_idx] = dV_dI[elm_idx] * f[elm_idx];
 
     for (std::size_t elm_idx = size / 2; elm_idx != size - 1; ++elm_idx) 
-        F0[elm_idx] = -F0[elm_idx]; 
+        F0[elm_idx] = -F0[size - elm_idx - 1]; 
 }
 
 template<typename T>

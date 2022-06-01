@@ -4,7 +4,7 @@ template <typename T>
 void lha_sweep_matrix(T *a, T *b, T *c, T const *Dc, T const *V, std::size_t size, T rdI, T dt) {
     a[1] = static_cast<T>(0);
     b[1] = static_cast<T>(1) + dt * rdI * rdI * (Dc[0] + Dc[1]);
-    c[1] = - dt * rdI * (rdI * Dc[1] - T(0.5) * V[2]);
+    c[1] = - dt * rdI * (rdI * Dc[1] - static_cast<T>(0.5) * V[2]);
 
     for (std::size_t elm_idx = 2; elm_idx != size - 2; ++elm_idx) {
         a[elm_idx] = - dt * rdI * (rdI * Dc[elm_idx - 1] + T(0.5) * V[elm_idx - 1]);
