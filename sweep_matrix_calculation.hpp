@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cassert>
 
 template <typename T>
 void lha_sweep_matrix(T *a, T *b, T *c, T const *Dc, T const *V, std::size_t size, T rdI, T dt) {
