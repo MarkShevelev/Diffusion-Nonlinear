@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <cassert>
 
 #include <sweep_matrix_calculation.hpp>
 #include <rha_calculation.hpp>
@@ -62,7 +63,7 @@ template <typename T>
 void Dc_initial(T *Dc, std::size_t size, T eps, GetI<T> const &I) {
     for (std::size_t elm_idx = 1; elm_idx != size - 2; ++elm_idx) {
         auto hI = static_cast<T>(0.5) * (I(elm_idx) + I(elm_idx + 1));
-        Dc[elm_idx] = eps * eps * std::pow(static_cast<T>(1) - hI * hI, static_cast<T>(2));
+        Dc[elm_idx] = 0;//eps * eps * std::pow(static_cast<T>(1) - hI * hI, static_cast<T>(2));
     }
     Dc[0] = static_cast<T>(0);
     Dc[size - 2] = static_cast<T>(0);
@@ -71,7 +72,9 @@ void Dc_initial(T *Dc, std::size_t size, T eps, GetI<T> const &I) {
 template <typename T>
 void V_initial(T *V, std::size_t size, T eps, T kappa, GetI<T> const &I) {
     for (std::size_t elm_idx = 1; elm_idx != size / 2; ++elm_idx) {
-        V[elm_idx] = - kappa * std::sqrt(eps) * std::pow(static_cast<T>(1) - I(elm_idx) * I(elm_idx), static_cast<T>(1.25));
+        V[elm_idx] = -kappa 
+            * (static_cast<T>(1) - I(elm_idx) * I (elm_idx)) 
+            * (static_cast<T>(1) - I(elm_idx) * I(elm_idx));//- kappa * std::sqrt(eps) * std::pow(static_cast<T>(1) - I(elm_idx) * I(elm_idx), static_cast<T>(1.25));
         V[size - elm_idx - 1] = V[elm_idx];
     }
     V[0] = V[size - 1] = static_cast<T>(0);
@@ -80,7 +83,9 @@ void V_initial(T *V, std::size_t size, T eps, T kappa, GetI<T> const &I) {
 template <typename T>
 void dV_dI_initial(T *dV_dI, std::size_t size, T eps, T kappa, GetI<T> const &I) {
     for (std::size_t elm_idx = 1; elm_idx != size / 2; ++elm_idx) {
-        dV_dI[elm_idx] = kappa * std::sqrt(eps) * static_cast<T>(2.5) * I(elm_idx) * std::pow(static_cast<T>(1) - I(elm_idx) * I(elm_idx), static_cast<T>(0.25));
+        dV_dI[elm_idx] = kappa 
+        * static_cast<T>(4) * I(elm_idx)
+        * (static_cast<T>(1) - I(elm_idx) * I(elm_idx)); //kappa * std::sqrt(eps) * static_cast<T>(2.5) * I(elm_idx) * std::pow(static_cast<T>(1) - I(elm_idx) * I(elm_idx), static_cast<T>(0.25));
         dV_dI[size - elm_idx - 1] = - dV_dI[elm_idx];
     }
     
@@ -155,7 +160,7 @@ int main() {
     // export
     {
         std::stringstream output_filename;
-        output_filename << eps << '-' << kappa << '-' << size << '-' << dt << ".dat";
+        output_filename << eps << '-' << kappa << '-' << size << '-' << dt << "-VDF.dat";
         std::ofstream fout(output_filename.str());
         if (!fout)
             std::cerr << "Can't open file" << std::endl;
