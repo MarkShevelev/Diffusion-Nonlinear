@@ -155,7 +155,7 @@ int main() {
     // export
     {
         std::stringstream output_filename;
-        output_filename << eps << '-' << kappa << '-' << size << '-' << dt << ".dat";
+        output_filename << eps << '-' << kappa << '-' << size << '-' << dt << "-VDF.dat";
         std::ofstream fout(output_filename.str());
         if (!fout)
             std::cerr << "Can't open file" << std::endl;
