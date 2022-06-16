@@ -15,5 +15,5 @@ auto sum_kahan(std::size_t begin, std::size_t end, F f) {
 
 template <typename T, typename F>
 auto average_kahan(std::size_t begin, std::size_t end, F f) {
-    return sum_kahan<T>(begin, end, f) / (end - begin - 1);
+    return sum_kahan<T>(begin, end, f) / (end - begin);
 }
